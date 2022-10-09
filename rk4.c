@@ -9,6 +9,9 @@ double** solve(void (*f)(double, double*, double*),
            double tmax,
            int d) {
     
+    // Performance hack
+    long dthalf = dt/2;
+    
     // RK coefficients
     double* k1 = (double*) malloc(d * sizeof(double));
     double* k2 = (double*) malloc(d * sizeof(double));
@@ -44,15 +47,15 @@ double** solve(void (*f)(double, double*, double*),
         
         // k2 is the slope f(t+dt/2, y+dt/2*k1)
         for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dt/2*k1[j];
+            y_tmp[j] = y[j] + dthalf*k1[j];
         }
-        f(t+dt/2, y_tmp, k2);
+        f(t+dthalf, y_tmp, k2);
         
         // k3 is the slope f(t+dt/2, y+dt/2*k2)        
         for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dt/2*k2[j];
+            y_tmp[j] = y[j] + dthalf*k2[j];
         }
-        f(t+dt/2, y_tmp, k3);
+        f(t+dthalf, y_tmp, k3);
         
         // k4 is the slope f(t+dt, y+dt*k3)
         for (int j = 0; j < d; j++) {
