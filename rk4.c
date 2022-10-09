@@ -3,7 +3,7 @@
 #include <time.h>
 #include <string.h>
 
-void solve(void (*f)(double, double*, double*),
+double** solve(void (*f)(double, double*, double*),
            double* y0,
            double dt,
            double tmax,
@@ -23,12 +23,22 @@ void solve(void (*f)(double, double*, double*),
     double* y = (double*) malloc(d * sizeof(double));
     memcpy(y, y0, d*sizeof(double));
     
+    // Results
+    long imax = (long) (tmax/dt);
+    double** res = (double**) malloc((1+d) * sizeof(double*));
+    for (int i = 0; i < 1+d; i++) {
+        res[i] = (double*) malloc(imax * sizeof(double));
+    }
     
     // Simulation loop
- 
-    for (long i = 0; t < tmax; i++) {
-        printf("%f, %f, %f, %f \n", t, y[0], y[1], y[2]);
-
+    for (long i = 0; i < imax; i++) {
+        // Save current state
+        res[0][i] = t;
+        for (int j = 0; j < d; j++) {
+            res[j+1][i] = y[j];
+        }
+        //printf("%f, %f, %f, %f \n", t, y[0], y[1], y[2]);
+        
         // k1 equals the slope f(t, y)
         f(t, y, k1);
         
@@ -55,7 +65,10 @@ void solve(void (*f)(double, double*, double*),
             y[j] = y[j] + dt*(1.0/6.0)*(k1[j]+k2[j]+k3[j]+k4[j]);
         }
         t += dt;       
-    }    
+    }
+    
+    return res;
+    
 }
 
 
