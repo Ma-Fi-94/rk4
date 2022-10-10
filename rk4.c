@@ -75,7 +75,7 @@ double** solve(void (*f)(double, double*, double*),
 
 // need to call this from Python ("dealloc(res)") to avoid leaks
 void dealloc(double** ptr, int d) {
-    for (int i = 0; i<d; i++) {
+    for (int i = 0; i<d+1; i++) {
         free(ptr[i]);
     }
     free (ptr);
