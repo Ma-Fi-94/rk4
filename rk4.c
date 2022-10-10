@@ -69,6 +69,15 @@ double** solve(void (*f)(double, double*, double*),
         t += dt;       
     }
     
+    // Cleanup -- especially important if we call this function from python!
+    free(y);
+    free(k1);
+    free(k2);
+    free(k3);           
+    free(k4);
+    free(y_tmp);
+    
+    // Returning results
     return res;
     
 }
