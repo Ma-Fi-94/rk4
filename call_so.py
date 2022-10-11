@@ -1,10 +1,9 @@
 # Need this for calling the SO
-import ctypes
 from ctypes import *
 
 # Load the shared library into ctypes
 libname = "./rk4.so"
-c_lib = ctypes.CDLL(libname)
+c_lib = CDLL(libname)
 
 ############################################
 
@@ -13,7 +12,11 @@ c_lib = ctypes.CDLL(libname)
 # double** solve(void (*f)(double, double*, double*), double* y0, double dt, double tmax, int d)
 solve = c_lib.solve
 solve.restype = POINTER(POINTER(c_double))
-solve.argtypes = [CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)), POINTER(c_double), c_double, c_double, c_int]
+solve.argtypes = [CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
+                  POINTER(c_double),
+                  c_double,
+                  c_double,
+                  c_int]
 
 # We want to pass this Pyton function to the solver, thus we need to properly annotate it
 @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
