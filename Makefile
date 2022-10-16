@@ -18,9 +18,17 @@ so:
 	${CC} ${SRC}.c -fPIC -shared -o ${DEST}.so
 
 pythonlib:
+	# Code style
 	importchecker ${PYTHONLIB}
 	isort ${PYTHONLIB}
 	yapf -i ${PYTHONLIB}
-	pylint ${PYTHONLIB}
-
-
+	
+	# Linting
+	pylint --fail-under 0 ${PYTHONLIB} #TODO change this to 10 after linting has been finished
+	
+	# Type checking
+	mypy ${PYTHONLIB}
+	
+	# Testing
+	pytest .
+	py.test --cov=. --cov-report term-missing  -v

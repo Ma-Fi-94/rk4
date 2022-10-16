@@ -68,16 +68,15 @@ def integrate(fun: Callable[[float, List[float]],
     # Convert the other parameters to c_types, so that we may pass them
     ext_dt = c_double(dt)
     ext_tmax = c_double(tmax)
-    ext_y0 = (c_double * len(y0))(*y0)
-    ext_y0 = cast(ext_y0, POINTER(c_double))
+    ext_y0 = cast((c_double * len(y0))(*y0), POINTER(c_double))
     ext_d = c_int(len(y0))
 
     # Calling the function, getting a double** as return
     ext_ret = solve(ext_fun, ext_y0, ext_dt, ext_tmax, ext_d)
 
     # TODO: copy results to Python variables for returning
-    t = 0
-    sol = 0
+    t = [0.0]
+    sol = [[0.0], [0.0]]
 
     # Dealloc the memory allocated in the SO
     dealloc(ext_ret)
