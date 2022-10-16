@@ -60,8 +60,6 @@ def integrate(fun: Callable[[float, List[float]],
     # which writes to an outparam instead: ext_fun(t, y, dydt) -> None
     @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
     def ext_fun(t, y, dydt):
-        # pylint: disable=unused-argument
-
         # We really need this explicit loop over all dimensions
         # If we would just let dydt = fun(t,y), this would always yield zeros.
         for i in range(len(y0)):
