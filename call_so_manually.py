@@ -17,7 +17,7 @@ solve.argtypes = [
 ]
 
 
-# We want to pass this Pyton function to the solver, thus we need to properly annotate it
+# We want to pass this Python function to the solver, thus we need to properly annotate it
 @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
 def lorenz(t, y, dydt):
     dydt[0] = 10.0 * (y[1] - y[0])

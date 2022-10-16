@@ -55,10 +55,15 @@ def integrate(fun: Callable[[float, List[float]],
         raise TypeError(
             "Parameter fun must be a function fun(t, y0) -> dydt.") from exc
 
-    # TODO: We need to make a CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))(f)
-    # In particular, fun returns dydt, but for the rk4.so we require
-    # a function ext_fun which writes to an "outparameter"
-    ext_fun = fun
+    # We get a Python function fun(t, y) -> dydt.
+    # We need to make a new function as callback for the C shared object,
+    # which writes to an outparam instead: ext_fun(t, y, dydt) -> None
+    def ext_fun(t, y, dydt):
+        # pylint: disable=unused-argument
+        dydt = fun(t, y)
+
+    ext_fun = CFUNCTYPE(None, c_double, POINTER(c_double),
+                        POINTER(c_double))(ext_fun)
 
     # Convert the other parameters to c_types, so that we may pass them
     ext_dt = c_double(dt)
@@ -68,10 +73,14 @@ def integrate(fun: Callable[[float, List[float]],
     ext_d = c_int(len(y0))
 
     # Calling the function, getting a double** as return
-    ret = solve(ext_fun, ext_y0, ext_dt, ext_tmax, ext_d)
+    ext_ret = solve(ext_fun, ext_y0, ext_dt, ext_tmax, ext_d)
 
-    # TODO: copy results to a Python variable and dealloc memory allocated in the SO
-    # ...
+    # TODO: copy results to Python variables for returning
+    t = 0
+    sol = 0
 
-    # TODO: return results as a tuple (t, y)
-    return ret
+    # Dealloc the memory allocated in the SO
+    dealloc(ext_ret)
+
+    # Return results as a tuple (t, y)
+    return t, sol
