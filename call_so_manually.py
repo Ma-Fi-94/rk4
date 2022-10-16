@@ -42,14 +42,12 @@ y_final_anal = 100*(2.71)**(1.0*(-0.1))
 print("y(1.0) analytical: ", y_final_anal)
 
 print("Difference num. vs. anal. solution:", (y_final_num-y_final_anal)/y_final_anal)
-# TODO: There seems to be some problem in the solver itself.
 
 # dealloc in C, to avoid leak
 dealloc = c_lib.dealloc
 dealloc.argtypes = [POINTER(POINTER(c_double)), c_int]
 dealloc.restype = None
 dealloc(ret, 3)
-
 
 
 ############################################

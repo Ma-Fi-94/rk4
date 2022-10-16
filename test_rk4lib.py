@@ -19,7 +19,7 @@ def test_solve_expdecay():
                        tmax=1.0)
     
     # Assert that numerical solution is close to analytical solution
-    assert np.abs(sol[0][-1] - 100.0*np.exp(-0.1*1.0)) < 1e-6
+    assert np.abs(sol[0][-1] - 100.0*np.exp(-0.1*1.0)) < 1e-3
     
 
 def test_solve_lorenz():

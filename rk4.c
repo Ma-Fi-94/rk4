@@ -64,7 +64,7 @@ double** solve(void (*f)(double, double*, double*),
         
         // Integration step y := y+dt*(1/6)*(k1+2k2+2k3+k4), t := t+dt
         for (int j = 0; j < d; j++) {
-            y[j] = y[j] + dt*(1.0/6.0)*(k1[j]+k2[j]+k3[j]+k4[j]);
+            y[j] = y[j] + dt*(1.0/6.0)*(k1[j]+2*k2[j]+2*k3[j]+k4[j]);
         }
         t += dt;       
     }
