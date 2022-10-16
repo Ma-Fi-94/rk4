@@ -58,12 +58,14 @@ def integrate(fun: Callable[[float, List[float]],
     # We get a Python function fun(t, y) -> dydt.
     # We need to make a new function as callback for the C shared object,
     # which writes to an outparam instead: ext_fun(t, y, dydt) -> None
+    @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
     def ext_fun(t, y, dydt):
         # pylint: disable=unused-argument
-        dydt = fun(t, y)
 
-    ext_fun = CFUNCTYPE(None, c_double, POINTER(c_double),
-                        POINTER(c_double))(ext_fun)
+        # We really need this explicit loop over all dimensions
+        # If we would just let dydt = fun(t,y), this would always yield zeros.
+        for i in range(len(y0)):
+            dydt[i] = fun(t, y)[i]
 
     # Convert the other parameters to c_types, so that we may pass them
     ext_dt = c_double(dt)
@@ -73,10 +75,14 @@ def integrate(fun: Callable[[float, List[float]],
 
     # Calling the function, getting a double** as return
     ext_ret = solve(ext_fun, ext_y0, ext_dt, ext_tmax, ext_d)
+    print(ext_ret[0][0:100])
+    print(ext_ret[1][0:100])
 
-    # TODO: copy results to Python variables for returning
-    t = [0.0]
-    sol = [[0.0], [0.0]]
+    # Copy results to Python variables for returning
+    t = ext_ret[0][0:int(tmax / dt)]
+    sol = []
+    for i in range(len(y0)):
+        sol.append(ext_ret[i + 1][0:int(tmax / dt)])
 
     # Dealloc the memory allocated in the SO
     dealloc(ext_ret, len(y0))
