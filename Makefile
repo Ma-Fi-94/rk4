@@ -3,7 +3,7 @@ DEST=rk4
 CC=clang
 CFLAGS=-Wall -Wextra -Wpedantic
 
-PYTHONLIB=rk4.py
+PYTHONLIB=rk4lib.py
 
 elf: 
 	${CC} ${SRC}.c ${CC_FLAGS} -o ${DEST}.elf
@@ -30,5 +30,4 @@ pythonlib:
 	mypy ${PYTHONLIB}
 	
 	# Testing
-	pytest .
 	py.test --cov=. --cov-report term-missing  -v
