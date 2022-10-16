@@ -1,16 +1,26 @@
-SRC=rk4.c
+SRC=rk4
 DEST=rk4
 CC=clang
 CFLAGS=-Wall -Wextra -Wpedantic
 
-all: 
-	${CC} ${SRC} ${CC_FLAGS} -o ${DEST}.elf
+PYTHONLIB=rk4.py
 
-run: all
+elf: 
+	${CC} ${SRC}.c ${CC_FLAGS} -o ${DEST}.elf
+
+run: elf
 	./${DEST}.elf
-grind:
-	${CC} ${SRC} ${CC_FLAGS} -g -o ${DEST}.elf
+
+grind: elf
 	valgrind ./${DEST}.elf
 
 so:
-	${CC} ${SRC} -fPIC -shared -o ${DEST}.so
+	${CC} ${SRC}.c -fPIC -shared -o ${DEST}.so
+
+pythonlib:
+	importchecker ${PYTHONLIB}
+	isort ${PYTHONLIB}
+	yapf -i ${PYTHONLIB}
+	pylint ${PYTHONLIB}
+
+
