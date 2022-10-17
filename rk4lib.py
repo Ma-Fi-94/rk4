@@ -4,16 +4,18 @@ from ctypes import CDLL, CFUNCTYPE, POINTER, c_double, c_int, cast
 from typing import Callable, List, Tuple
 
 # Load the SO using the ctypes library
-c_lib = CDLL("./rk4.so")
+LIBNAME = "./rk4.so"
+c_lib = CDLL(LIBNAME)
 
-# Annotate the lib functions for later calling
+# Annotate the solver function for later calling
 solve = c_lib.solve
 solve.restype = POINTER(POINTER(c_double))
 solve.argtypes = [
     CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
     POINTER(c_double), c_double, c_double, c_int
-    ]
+]
 
+# Annotate the dealloc function for later calling
 dealloc = c_lib.dealloc
 dealloc.argtypes = [POINTER(POINTER(c_double)), c_int]
 dealloc.restype = None
@@ -56,7 +58,9 @@ def integrate(fun: Callable[[float, List[float]],
     # which writes to an outparam instead: ext_fun(t, y, dydt) -> None
     @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
     def ext_fun(t, y, dydt):
-        for i in range(len(y0)): # We really need this explicit loop
+        # We really need this explicit loop over all dimensions.
+        # Otherwise, we'd get only zeros.
+        for i in range(len(y0)):
             dydt[i] = fun(t, y)[i]
 
     # Convert the other parameters to c_types, so that we may pass them
@@ -77,4 +81,5 @@ def integrate(fun: Callable[[float, List[float]],
     # Dealloc the memory allocated in the SO
     dealloc(ext_ret, len(y0))
 
+    # Return results as tuple of time points and system variables
     return t, sol
