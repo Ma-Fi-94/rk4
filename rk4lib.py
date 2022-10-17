@@ -37,21 +37,22 @@ def integrate(fun: Callable[[float, List[float]],
             "Parameter y0 must be a list of arguments to f.") from exc
     try:
         dt = float(dt)
-    except TypeError as exc:
-        raise TypeError("Parameter dt must be a float") from exc
+    except ValueError as exc:
+        raise ValueError("Parameter dt must be a float") from exc
     try:
         tmax = float(tmax)
-    except TypeError as exc:
-        raise TypeError(
+    except ValueError as exc:
+        raise ValueError(
             "Parameter tmax must be a list of arguments to f.") from exc
 
-    # Check that fun has the appropriate signature and takes y0 to return dydt
+    # Check that fun has the appropriate signature and accepts y0 to return dydt
     try:
         dydt = fun(0, y0)
         dydt = list(dydt)
-    except TypeError as exc:
+    except IndexError as exc:
         raise TypeError(
-            "Parameter fun must be a function fun(t, y0) -> dydt.") from exc
+            "Function fun(t, y) -> dydt is incompatible with provided parameter y0."
+        ) from exc
 
     # We get a Python function fun(t, y) -> dydt.
     # We need to make a new function as callback for the C shared object,

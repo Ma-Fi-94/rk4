@@ -17,14 +17,14 @@ grind: elf
 so:
 	${CC} ${SRC}.c -fPIC -shared -o ${DEST}.so
 
-pythonlib:
+pythonlib: so
 	# Code style
 	importchecker ${PYTHONLIB}
 	isort ${PYTHONLIB}
 	yapf -i ${PYTHONLIB}
 	
 	# Linting
-	pylint --fail-under 0 ${PYTHONLIB} #TODO change this to 10 after linting has been finished
+	pylint ${PYTHONLIB}
 	
 	# Type checking
 	mypy ${PYTHONLIB}
