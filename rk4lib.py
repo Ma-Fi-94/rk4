@@ -11,10 +11,8 @@ c_lib = CDLL(LIBNAME)
 # double** solve(void (*f)(double, double*, double*), double* y0, double dt, double tmax, int d)
 solve = c_lib.solve
 solve.restype = POINTER(POINTER(c_double))
-solve.argtypes = [
-    CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
-    POINTER(c_double), c_double, c_double, c_int
-]
+solve.argtypes = [CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
+    POINTER(c_double), c_double, c_double, c_int]
 
 # Annotate dealloc function for later calling
 # void dealloc(double** ptr, int d)
@@ -60,9 +58,7 @@ def integrate(fun: Callable[[float, List[float]],
     # which writes to an outparam instead: ext_fun(t, y, dydt) -> None
     @CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
     def ext_fun(t, y, dydt):
-        # We really need this explicit loop over all dimensions
-        # If we would just let dydt = fun(t,y), this would always yield zeros.
-        for i in range(len(y0)):
+        for i in range(len(y0)): # We really need this explicit loop
             dydt[i] = fun(t, y)[i]
 
     # Convert the other parameters to c_types, so that we may pass them
@@ -73,8 +69,6 @@ def integrate(fun: Callable[[float, List[float]],
 
     # Calling the function, getting a double** as return
     ext_ret = solve(ext_fun, ext_y0, ext_dt, ext_tmax, ext_d)
-    print(ext_ret[0][0:100])
-    print(ext_ret[1][0:100])
 
     # Copy results to Python variables for returning
     t = ext_ret[0][0:int(tmax / dt)]
