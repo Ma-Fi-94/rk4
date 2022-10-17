@@ -1,18 +1,14 @@
-"""Test suite for the convenience library rk4.py, which abstracts
-away the nitty gritty details of how to interact with the shared
-object rk4.so implemented in C."""
+"""Test suite for the convenience library rk4.py"""
 
 from rk4lib import integrate
 import numpy as np
 
 def test_solve_expdecay():
-    """Test the main function of the convenience library."""
+    """Test solver with a simple exponential decay model."""
     
-    # A linear 1d ODE.
     def expdecay(t, y):
         return [-0.1*y[0]]
     
-    # Solve numerically
     t, sol = integrate(fun=expdecay,
                        y0=[100.0],
                        dt=1e-6,
@@ -23,9 +19,8 @@ def test_solve_expdecay():
     
 
 def test_solve_lorenz():
-    """Test the main function of the convenience library."""
+    """Test solver with the Lorenz system."""
     
-    # A multidimensional, chaotic function, which is analytically unsolvable.
     def lorenz(t, y):
         dydt_0 = 10.0 * (y[1] - y[0])
         dydt_1 = y[0] * (28.0 - y[2]) - y[1]
@@ -36,4 +31,3 @@ def test_solve_lorenz():
                        y0=[1.0, 1.0, 1.0],
                        dt=1e-6,
                        tmax=1.0)
-    
