@@ -4,18 +4,14 @@ from ctypes import CDLL, CFUNCTYPE, POINTER, c_double, c_int, cast
 from typing import Callable, List, Tuple
 
 # Load the SO using the ctypes library
-LIBNAME = "./rk4.so"
-c_lib = CDLL(LIBNAME)
+c_lib = CDLL("./rk4.so")
 
-# Annotate solve function for later calling
-# double** solve(void (*f)(double, double*, double*), double* y0, double dt, double tmax, int d)
+# Annotate the lib functions for later calling
 solve = c_lib.solve
 solve.restype = POINTER(POINTER(c_double))
 solve.argtypes = [CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
     POINTER(c_double), c_double, c_double, c_int]
 
-# Annotate dealloc function for later calling
-# void dealloc(double** ptr, int d)
 dealloc = c_lib.dealloc
 dealloc.argtypes = [POINTER(POINTER(c_double)), c_int]
 dealloc.restype = None
@@ -79,5 +75,4 @@ def integrate(fun: Callable[[float, List[float]],
     # Dealloc the memory allocated in the SO
     dealloc(ext_ret, len(y0))
 
-    # Return results as a tuple (t, y)
     return t, sol
