@@ -9,8 +9,10 @@ c_lib = CDLL("./rk4.so")
 # Annotate the lib functions for later calling
 solve = c_lib.solve
 solve.restype = POINTER(POINTER(c_double))
-solve.argtypes = [CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
-    POINTER(c_double), c_double, c_double, c_int]
+solve.argtypes = [
+    CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
+    POINTER(c_double), c_double, c_double, c_int
+    ]
 
 dealloc = c_lib.dealloc
 dealloc.argtypes = [POINTER(POINTER(c_double)), c_int]
