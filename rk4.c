@@ -3,13 +3,28 @@
 #include <time.h>
 #include <string.h>
 
-void check_null(void* ptr) {
+
+static inline void check_null(void* ptr) {
     if (ptr == NULL) {
         fprintf(stdout, "Failed to allocate memory. Exiting.\n");
         exit(-1);
     }
     return;
 }
+
+
+static inline void lin_comb(double* res,
+    double c1,
+    double* vec1,
+    double c2,
+    double* vec2,
+    int d) {
+
+    for (int i = 0; i < d; i++) {
+        res[i] = c1*vec1[i] + c2*vec2[i];
+    }
+}
+
 
 double** solve(void (*f)(double, double*, double*),
     double* y0,
@@ -60,21 +75,15 @@ double** solve(void (*f)(double, double*, double*),
         f(t, y, k1);
         
         // k2 = f(t+dt/2, y+dt/2*k1)
-        for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dt_half*k1[j];
-        }
+        lin_comb(y_tmp, 1, y, dt_half, k1, d);
         f(t+dt_half, y_tmp, k2);
         
         // k3 = f(t+dt/2, y+dt/2*k2)        
-        for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dt_half*k2[j];
-        }
+        lin_comb(y_tmp, 1, y, dt_half, k2, d);        
         f(t+dt_half, y_tmp, k3);
         
         // k4 = f(t+dt, y+dt*k3)
-        for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dt*k3[j];
-        }       
+        lin_comb(y_tmp, 1, y, dt, k3, d);                       
         f(t+dt, y_tmp, k4);
         
         // Integration step y := y+dt*(1/6)*(k1+2k2+2k3+k4), t := t+dt
