@@ -9,7 +9,6 @@ static inline void check_null(void* ptr) {
         fprintf(stdout, "Failed to allocate memory. Exiting.\n");
         exit(-1);
     }
-    return;
 }
 
 
