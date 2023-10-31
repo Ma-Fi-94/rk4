@@ -3,58 +3,73 @@
 #include <time.h>
 #include <string.h>
 
-double** solve(void (*f)(double, double*, double*),
-           double* y0,
-           double dt,
-           double tmax,
-           int d) {
-    
-    // Init current system state with initial condition
-    double t = 0;
-    double* y = (double*) malloc(d * sizeof(double));
-    memcpy(y, y0, d*sizeof(double));
-    
-    // Results to be stored here
-    long imax = (long) (tmax/dt);
-    double** res = (double**) malloc((1+d) * sizeof(double*));
-    for (int i = 0; i < 1+d; i++) {
-        res[i] = (double*) malloc(imax * sizeof(double));
+void check_null(void* ptr) {
+    if (ptr == NULL) {
+        fprintf(stdout, "Failed to allocate memory. Exiting.\n");
+        exit(-1);
     }
-           
-    // For storing the RK coefficients during iteration
-    double* k1 = (double*) malloc(d * sizeof(double));
-    double* k2 = (double*) malloc(d * sizeof(double));
-    double* k3 = (double*) malloc(d * sizeof(double));
-    double* k4 = (double*) malloc(d * sizeof(double));
-    
-    // For calculating y for the intermediate steps k2,k3,k4
-    double* y_tmp = (double*) malloc(d * sizeof(double));
-    
-    // Performance hack for avoiding potential recalculation
-    long dthalf = dt/2;
-    
+    return;
+}
+
+double** solve(void (*f)(double, double*, double*),
+    double* y0,
+    double dt,
+    double tmax,
+    int d) {
+
+    // Some precomputing
+    long dt_half = dt/2;
+    long i_max   = (long) (tmax/dt);
+    int size_y   = d * sizeof(double);
+
+    // For storing intermediate results
+    double* k1    = (double*) malloc(size_y);
+    double* k2    = (double*) malloc(size_y);
+    double* k3    = (double*) malloc(size_y);
+    double* k4    = (double*) malloc(size_y);
+    double* y_tmp = (double*) malloc(size_y);
+    check_null(k1);
+    check_null(k2);
+    check_null(k3);
+    check_null(k4);
+    check_null(y_tmp);
+
+    // Results to be stored here
+    double** res = (double**) malloc((1+d) * sizeof(double*));
+    check_null(res);
+    for (int i = 0; i < 1+d; i++) {
+        res[i] = (double*) malloc(i_max * sizeof(double));
+        check_null(res);
+    }
+
+    // Init system state with initial condition
+    double t  = 0;
+    double* y = (double*) malloc(size_y);
+    check_null(y);
+    memcpy(y, y0, size_y);
+               
     // Main integration loop
-    for (long i = 0; i < imax; i++) {
+    for (long i = 0; i < i_max; i++) {
         // Save current state
         res[0][i] = t;
         for (int j = 0; j < d; j++) {
             res[j+1][i] = y[j];
         }
-        
+
         // k1 = f(t, y)
         f(t, y, k1);
         
         // k2 = f(t+dt/2, y+dt/2*k1)
         for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dthalf*k1[j];
+            y_tmp[j] = y[j] + dt_half*k1[j];
         }
-        f(t+dthalf, y_tmp, k2);
+        f(t+dt_half, y_tmp, k2);
         
         // k3 = f(t+dt/2, y+dt/2*k2)        
         for (int j = 0; j < d; j++) {
-            y_tmp[j] = y[j] + dthalf*k2[j];
+            y_tmp[j] = y[j] + dt_half*k2[j];
         }
-        f(t+dthalf, y_tmp, k3);
+        f(t+dt_half, y_tmp, k3);
         
         // k4 = f(t+dt, y+dt*k3)
         for (int j = 0; j < d; j++) {
