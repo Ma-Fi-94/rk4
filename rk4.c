@@ -61,7 +61,6 @@ double** solve(void (*f)(double, double*, double*),
     for (long i = 0; i < i_max; i++) {
         // Save current state
         res[0][i] = t;
-        printf("t: %f, y: %f, %f, %f\n", t, y[0], y[1], y[2]);
         for (int j = 0; j < d; j++) {
             res[j+1][i] = y[j];
         }
