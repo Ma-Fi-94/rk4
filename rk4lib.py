@@ -4,22 +4,18 @@ from ctypes import CDLL, CFUNCTYPE, POINTER, c_double, c_int, cast
 from typing import Callable, List, Tuple
 
 # Load the SO using the ctypes library
-LIBNAME = "./rk4.so"
-c_lib = CDLL(LIBNAME)
+rk4 = CDLL("./rk4.so")
 
 # Annotate the solver function for later calling
-solve = c_lib.solve
+solve = rk4.solve
+fun_type = CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double))
+solve.argtypes = [fun_type, POINTER(c_double), c_double, c_double, c_int]
 solve.restype = POINTER(POINTER(c_double))
-solve.argtypes = [
-    CFUNCTYPE(None, c_double, POINTER(c_double), POINTER(c_double)),
-    POINTER(c_double), c_double, c_double, c_int
-]
 
 # Annotate the dealloc function for later calling
-dealloc = c_lib.dealloc
+dealloc = rk4.dealloc
 dealloc.argtypes = [POINTER(POINTER(c_double)), c_int]
 dealloc.restype = None
-
 
 def integrate(fun: Callable[[float, List[float]],
                             List[float]], y0: List[float], dt: float,
@@ -30,29 +26,34 @@ def integrate(fun: Callable[[float, List[float]],
     # Check types of all params
     if not callable(fun):
         raise TypeError("Parameter fun must be a callable.")
+
     try:
         y0 = list(y0)
     except TypeError as exc:
-        raise TypeError(
-            "Parameter y0 must be a list of arguments to f.") from exc
+        raise TypeError("Parameter y0 must be list of args to f.") from exc
+
     try:
         dt = float(dt)
     except ValueError as exc:
         raise ValueError("Parameter dt must be a float") from exc
+
     try:
         tmax = float(tmax)
     except ValueError as exc:
-        raise ValueError(
-            "Parameter tmax must be a list of arguments to f.") from exc
+        raise ValueError("Parameter tmax must be a number.") from exc
 
     # Check that fun has the appropriate signature and accepts y0 to return dydt
     try:
         dydt = fun(0, y0)
-        dydt = list(dydt)
     except IndexError as exc:
-        raise TypeError(
-            "Function fun(t, y) -> dydt is incompatible with provided parameter y0."
-        ) from exc
+        raise TypeError("Function fun(t, y) incompatible with y0.") from exc
+
+    # Check that fun returns a list
+    try:
+        dydt = list(dydt)
+    except ValueError as exc:
+        raise TypeError("Function fun(t,y) does not return list.") from exc
+
 
     # We get a Python function fun(t, y) -> dydt.
     # We need to make a new function as callback for the C shared object,
