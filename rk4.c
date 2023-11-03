@@ -3,12 +3,15 @@
 #include <time.h>
 #include <string.h>
 
-
-static inline void check_null(void* ptr) {
+static inline void* safe_malloc(size_t size) {
+    void* ptr = malloc(size);
+    
     if (ptr == NULL) {
         fprintf(stdout, "Failed to allocate memory. Exiting.\n");
         exit(-1);
     }
+
+    return(ptr);
 }
 
 
@@ -37,35 +40,28 @@ double** solve(void (*f)(double, double*, double*),
     int size_y   = d * sizeof(double);
 
     // For storing intermediate results
-    double* k1    = (double*) malloc(size_y);
-    double* k2    = (double*) malloc(size_y);
-    double* k3    = (double*) malloc(size_y);
-    double* k4    = (double*) malloc(size_y);
-    double* y_tmp = (double*) malloc(size_y);
-    check_null(k1);
-    check_null(k2);
-    check_null(k3);
-    check_null(k4);
-    check_null(y_tmp);
+    double* k1    = (double*) safe_malloc(size_y);
+    double* k2    = (double*) safe_malloc(size_y);
+    double* k3    = (double*) safe_malloc(size_y);
+    double* k4    = (double*) safe_malloc(size_y);
+    double* y_tmp = (double*) safe_malloc(size_y);
 
     // Results to be stored here
-    double** res = (double**) malloc((1+d) * sizeof(double*));
-    check_null(res);
+    double** res = (double**) safe_malloc((1+d) * sizeof(double*));
     for (int i = 0; i < 1+d; i++) {
-        res[i] = (double*) malloc(i_max * sizeof(double));
-        check_null(res);
+        res[i] = (double*) safe_malloc(i_max * sizeof(double));
     }
 
     // Init system state with initial condition
     double t  = 0;
-    double* y = (double*) malloc(size_y);
-    check_null(y);
+    double* y = (double*) safe_malloc(size_y);
     memcpy(y, y0, size_y);
                
     // Main integration loop
     for (long i = 0; i < i_max; i++) {
         // Save current state
         res[0][i] = t;
+        printf("t: %f, y: %f, %f, %f\n", t, y[0], y[1], y[2]);
         for (int j = 0; j < d; j++) {
             res[j+1][i] = y[j];
         }
@@ -127,7 +123,7 @@ void lorenz(double t, double* y, double* dydt) {
 
 
 int main() {
-    double* y0 = (double*) malloc(3 * sizeof(double));
+    double* y0 = (double*) safe_malloc(3 * sizeof(double));
 
     y0[0] = 1.0;
     y0[1] = 1.0;
