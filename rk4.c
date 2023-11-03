@@ -81,32 +81,31 @@ double** solve(void (*f)(double, double*, double*),
         f(t+dt, y_tmp, k4);
         
         // Integration step y := y+dt*(1/6)*(k1+2k2+2k3+k4), t := t+dt
+        t += dt;
         for (int j = 0; j < d; j++) {
             y[j] = y[j] + dt*(1.0/6.0)*(k1[j]+2*k2[j]+2*k3[j]+k4[j]);
         }
-        t += dt;       
     }
     
-    // Cleanup -- especially important if we call this function from python!
-    free(y);
+    // Cleanup and return
     free(k1);
     free(k2);
     free(k3);           
     free(k4);
     free(y_tmp);
-    
-    // Returning results
-    return res;
-    
+    free(y);
+    return res; 
 }
+
 
 // need to call this from Python ("dealloc(res)") to avoid leaks
 void dealloc(double** ptr, int d) {
-    for (int i = 0; i<d+1; i++) {
+    for (int i = 0; i < d+1; i++) {
         free(ptr[i]);
     }
     free (ptr);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////
 // All the stuff below this block is just for running the program on its own.
